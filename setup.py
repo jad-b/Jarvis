@@ -16,7 +16,7 @@ def latest_git_tag():
     try:
         tag = subprocess.check_output(
             ['git', 'describe', '--abbrev=0', '--tags']
-        ).rstrip()
+        ).decode().rstrip()
     except subprocess.CalledProcessError:
         return '0.0.0'
     return tag
@@ -47,6 +47,6 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.5'
     ),
 )
