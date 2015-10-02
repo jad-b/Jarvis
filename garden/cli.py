@@ -6,9 +6,9 @@ Helpful functions for dealing with the command line.
 """
 import string
 
-# Either this will create a new 'jarvis' logger, or it will inherit the
+# Either this will create a new 'garden' logger, or it will inherit the
 # pre-existing one from the importing script.
-_logger = logging.getLogger('jarvis')
+_logger = logging.getLogger('garden')
 
 
 def read_until_valid(prompt, valid_inputs=None, lmbda=None):
@@ -42,10 +42,38 @@ def read_until_valid(prompt, valid_inputs=None, lmbda=None):
             return user_input
 
 
-class JarvisShell(cmd.Cmd):
-    """Interactive shell into Jarvis."""
+def assemble_subparsers(groups, module_registry):
+    """Aggregates entrypoints under a single ArgumentParser.
+
+    Example CLI call:
+
+        garden <action> <module> [args...]
+
+    The alternative would be to expect each entrypoint module to provide an
+    ArgumentParser, and to handle sub-commands ourselves.
+    """
+    parser = argparse.ArgumentParser(prog='garden')
+
+    for group in groups: # For each sub-command, like 'bump'
+        # Create subparser for registration: <action>
+        subparsers = parser.add_subparsers(title=subgroup)
+        # For each implementing module
+        for k, v in module_registry.get(group, []):
+            # Which module will we be deferring to: <module>
+            module_parser = subparsers.add_parser(k)
+            # Consume all arguments remaining for passthrough: [args...]
+            module_parser.add_argument('args', nargs=argparse.REMAINDER)
+            # Set default to registered module's entrypoint function
+            module_parser.set_defaults(func=v.load())
+
+    return parser
+
+
+
+class GardenShell(cmd.Cmd):
+    """Interactive shell into Garden."""
     intro = 'Welcome, {user}'.format(user=os.getenv('USER'))
-    prompt = '[jarvis]$ '
+    prompt = '[garden]$ '
 
     def do_about(self, arg):
         """Print the 'about' statement."""

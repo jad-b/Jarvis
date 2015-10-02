@@ -1,6 +1,6 @@
-jarvis
+garden
 =======
-Jarvis is a scripting framework for raising code.
+Garden is a scripting framework for raising code.
 
 Within, each code repo gets represented by a module. This module defines
 implementations for a variety of interfaces, which themselves represent the

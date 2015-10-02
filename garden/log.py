@@ -3,7 +3,7 @@
 log
 ===
 
-Central Jarvis logger.
+Central Garden logger.
 """
 import logging
 import sys
@@ -11,7 +11,7 @@ import sys
 # TODO make configurable via CLI
 LOG_LEVEL = logging.DEBUG
 
-logger = logging.getLogger('bump')
+logger = logging.getLogger('garden')
 
 logger.setLevel(LOG_LEVEL)
 

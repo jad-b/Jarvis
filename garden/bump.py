@@ -11,6 +11,10 @@ from abc import ABCMeta
 import enum
 
 
+#: Regex for matching version numbers
+RE_VERSION = '(?P<version>(?:\d+\.?){3})'
+
+
 class SemVer(enum.Enum):
     patch = 'patch'
     minor = 'minor'
@@ -19,8 +23,8 @@ class SemVer(enum.Enum):
 
 class Bumper(metaclass=ABCMeta):
 
-    @abstractmethodd
-    def bump(self, target, semver=None, **kwargs):
+    @abstractmethod
+    def bump(self, target, version=SemVer.Patch, **kwargs):
         """Increments the target version with the code base.
 
         It is up to the implementation to define valid targets.
@@ -28,8 +32,13 @@ class Bumper(metaclass=ABCMeta):
         :arg str target: Name of target within code.
         :kwarg `SemVer` semver: Semantic version level to version bump by.
         """
-        pass
+        return
 
+    @property
+    @abstractmethod
+    def targets(self):
+        """Returns a list of targets available for bumping."""
+        return
 
     @classmethod
     def __subclasshook__(cls, C):
@@ -41,14 +50,19 @@ class Bumper(metaclass=ABCMeta):
 
 
 
-def semver_bump(version, level=Semver.patch.name):
-    x = list(map(int, version.split('.')))
-    if level == Semver.patch.name:
+def bump_version(version, new_version=Semver.patch):
+    """Changes the version by the given semantic versioning new_version, or specific
+    version."""
+    if re.match(RE_VERSION, version):
+        return new_version
+
+    x = split_version()
+    elif new_version == Semver.patch:
         x[2] += 1
-    elif level == Semver.minor.name:
+    elif new_version == Semver.minor:
         x[2] = 0
         x[1] += 1
-    elif level == Semver.major.name:
+    elif new_version == Semver.major:
         x[1], x[2] = 0, 0
         x[0] += 1
     else:
@@ -57,3 +71,5 @@ def semver_bump(version, level=Semver.patch.name):
     return '.'.join(list(map(str, x)))
 
 
+def split_version(version):
+    return list(map(int, version.split('.')))

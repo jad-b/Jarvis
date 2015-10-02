@@ -23,20 +23,19 @@ def latest_git_tag():
 
 
 setup(
-    name='jarvis',
+    name='garden',
     # Version is the most-recent git tag that's accessible via current commit.
     version=latest_git_tag(),
     long_description=readme(),
     description='Scripting framework for growing code.',
     author='jad-b',
     author_email='j.american.db@gmail.com',
-    url='https://github.com/jad-b/jarvis',
-    packages=['jarvis'],
+    url='https://github.com/jad-b/garden',
+    packages=['garden'],
     install_requires=requirements(),
     entry_points={
-        'jarvis.plugins': ['jarvis = jarvis'],
         'console_scripts': [
-            'jarvis=main:main',
+            'garden = main:main',
         ]
     },
     zip_safe=False,
