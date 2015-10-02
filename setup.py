@@ -36,6 +36,9 @@ setup(
     entry_points={
         'console_scripts': [
             'garden = main:main',
+        ],
+        'garden.tools': [
+            'bump = garden.bumper'
         ]
     },
     zip_safe=False,
