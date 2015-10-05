@@ -8,7 +8,13 @@ Version bumping interface.
 Allows bumping by specified version and SemVer semantics.
 """
 from abc import ABCMeta, abstractmethod
+from garden.log import logger
+import argparse
 import enum
+import re
+
+
+_logger = logger
 
 
 #: Regex for matching version numbers
@@ -87,16 +93,24 @@ def split_version(version):
     return list(map(int, version.split('.')))
 
 
-def attach_arguments(argparser):
+def setup_parser(argparser, repos):
     """Attach arguments to the given argparser."""
     def do_bump(args):
-        bump(args.repo, args.target, args.version, *args)
+        _logger.debug('Calling bump on %s', args.repo)
+        try:
+            # Load the entrypoint code
+            fn = repos['bump'][args.repo].load()
+            # Call registered 'bump' method on target repo
+            repos[args.repo](args.target, args.version, *args.args)
+        except KeyError:
+            _logger.warning("No repo called '%s' found", args.repo)
+
     argparser.add_argument('repo')
-    argparser.add_argument('-t', '--target', type=str, required=True)
-    argparser.add_argument('-v', '--version', type=to_version,
-            help=_version_help)
+    argparser.add_argument('target', type=str)
+    argparser.add_argument('version', type=to_version, help=_version_help)
     argparser.add_argument('args', nargs=argparse.REMAINDER,
             help='Addtional arguments to pass through')
-    argparser.set_default(do_bump)
+    argparser.set_defaults(func=do_bump)
+    _logger.debug('Setup bump() parsing')
 
 
