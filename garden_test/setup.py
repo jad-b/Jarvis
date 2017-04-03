@@ -1,4 +1,5 @@
 import subprocess
+import os
 from setuptools import setup, find_packages
 
 
@@ -8,12 +9,14 @@ def readme():
 
 
 def requirements():
-    with open('reqs.txt') as reqs:
-        return [line.strip() for line in reqs
-                if line and not line.startswith('#')]
+    reqs_file = 'reqs.txt'
+    if os.path.isfile(reqs_file):
+        with open('reqs.txt') as reqs:
+            return [line.strip() for line in reqs
+                    if line and not line.startswith('#')]
+    return []
 
 def latest_git_tag():
-    # Version is the most-recent git tag that's accessible via current commit.
     try:
         tag = subprocess.check_output(
             ['git', 'describe', '--abbrev=0', '--tags']
@@ -24,23 +27,19 @@ def latest_git_tag():
 
 
 setup(
-    name='garden',
+    name='garden_test',
     version=latest_git_tag(),
     long_description=readme(),
-    description='Scripting framework for growing code.',
-    author='jad-b',
+    description='Python package for testing garden',
+    author='Jeremy Dobbins-Bucklad',
     author_email='j.american.db@gmail.com',
     url='https://github.com/jad-b/garden',
-    packages=['garden'],
-    py_modules=['main'],
     install_requires=requirements(),
+    packages = find_packages(),
+    package_dir = {'garden': 'garden_test'},
+    py_modules=['testfile'],
     entry_points={
-        'console_scripts': [
-            'garden = main:main',
-        ],
-        'garden.tools': [
-            'bump = garden.bumper'
-        ]
+        'garden.bump': ['garden_test = garden_test.bump:Bumper.bump'],
     },
     zip_safe=False,
     include_package_data=True,
@@ -48,8 +47,7 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Natural Language :: English',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5'
     ),
 )

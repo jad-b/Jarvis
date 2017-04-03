@@ -20,13 +20,33 @@ _logger = logger
 #: Regex for matching version numbers
 RE_VERSION = '(?P<version>(?:\d+\.?){3})'
 _version_help = ('Either a Semantic Version alias (patch, minor, major), or a'
-    ' specified version, like x.y.z')
+                 ' specified version, like x.y.z')
 
 
 class SemVer(enum.Enum):
     patch = 'patch'
     minor = 'minor'
     major = 'major'
+
+
+def snr(line_gen, pattern, version):
+    """Search & replace a pattern from a stream of strings.
+
+    The first capture group will be replaced with the given version.
+    """
+    p = re.compile(pattern, re.MULTILINE)
+
+    line = next(line_gen, False)
+    while line:
+        yield eager_replace(p, version, line)
+        line = next(line_gen, False)
+
+
+def eager_replace(pattern, repl, line):
+    m = re.match(pattern, line)
+    if m:
+        line = re.sub(m.groups[1], repl, line)
+    return line
 
 
 class Bumper(metaclass=ABCMeta):
@@ -64,12 +84,12 @@ def bump_version(version, new_version=SemVer.patch):
         return new_version
 
     x = split_version()
-    if new_version == Semver.patch:
+    if new_version == SemVer.patch:
         x[2] += 1
-    elif new_version == Semver.minor:
+    elif new_version == SemVer.minor:
         x[2] = 0
         x[1] += 1
-    elif new_version == Semver.major:
+    elif new_version == SemVer.major:
         x[1], x[2] = 0, 0
         x[0] += 1
     else:
@@ -99,7 +119,7 @@ def setup_parser(argparser, repos):
         _logger.debug('Calling bump on %s', args.repo)
         try:
             # Load the entrypoint code
-            fn = repos['bump'][args.repo].load()
+            repos['bump'][args.repo].load()
             # Call registered 'bump' method on target repo
             repos[args.repo](args.target, args.version, *args.args)
         except KeyError:
@@ -109,8 +129,6 @@ def setup_parser(argparser, repos):
     argparser.add_argument('target', type=str)
     argparser.add_argument('version', type=to_version, help=_version_help)
     argparser.add_argument('args', nargs=argparse.REMAINDER,
-            help='Addtional arguments to pass through')
+                           help='Addtional arguments to pass through')
     argparser.set_defaults(func=do_bump)
     _logger.debug('Setup bump() parsing')
-
-
